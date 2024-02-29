@@ -2,17 +2,13 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3"; // Import D3 library
 
-const ArtistsHistogram = async () => {
+const ArtistsHistogram = ({ data }) => {
   const svgRef = useRef(); // Reference to SVG element
 
   useEffect(() => {
-    const fetchArtistData = async () => {
+    const fetchArtistData = () => {
       try {
         // Fetch data from the endpoint
-        const response = await fetch(
-          "https://api.hearthstonejson.com/v1/194648/enUS/cards.collectible.json"
-        );
-        const data = await response.json();
 
         // Create an object to store artist name and count
         const artistCount = {};
@@ -104,7 +100,7 @@ const ArtistsHistogram = async () => {
     };
 
     fetchArtistData();
-  }, []); // Run once on mount
+  }, [data]); // Run once on mount
 
   return (
     <div className="h-screen p-2 relative">
