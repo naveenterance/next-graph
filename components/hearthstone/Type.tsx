@@ -2,17 +2,28 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3"; // Import D3 library
 
-const CardType = ({ data }) => {
-  const svgRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true); // State variable for loading
+interface Card {
+  type: string;
+}
+
+interface CardTypeProps {
+  data: Card[];
+}
+
+const CardType: React.FC<CardTypeProps> = ({ data }) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // State variable for loading
 
   useEffect(() => {
     const fetchDataAndDrawChart = () => {
       // Group data by type and calculate count
-      const typeCounts = data.reduce((acc, card) => {
-        acc[card.type] = (acc[card.type] || 0) + 1;
-        return acc;
-      }, {});
+      const typeCounts: { [key: string]: number } = data.reduce(
+        (acc: { [key: string]: number }, card: Card) => {
+          acc[card.type] = (acc[card.type] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
 
       // Convert grouped data to D3-compatible format
       const pieData = Object.entries(typeCounts).map(([type, count]) => ({
@@ -21,10 +32,10 @@ const CardType = ({ data }) => {
       }));
 
       // Set dimensions and margins
-      const width = 800;
-      const height = 450;
-      const margin = 40;
-      const radius = Math.min(width, height) / 2 - margin;
+      const width: number = 800;
+      const height: number = 450;
+      const margin: number = 40;
+      const radius: number = Math.min(width, height) / 2 - margin;
 
       // Create and append SVG element to the component's div
       const svg = d3
@@ -36,20 +47,20 @@ const CardType = ({ data }) => {
 
       // Set color scale
       const color = d3
-        .scaleOrdinal()
+        .scaleOrdinal<string>()
         .domain(pieData.map((d) => d.type))
         .range(d3.schemeDark2);
 
       // Compute pie angles
       const pie = d3
-        .pie()
+        .pie<{ type: string; count: number }>()
         .sort(null) // Disable sorting to maintain data order
         .value((d) => d.count);
       const data_ready = pie(pieData);
 
       // Define arc generator
       const arc = d3
-        .arc()
+        .arc<d3.PieArcDatum<{ type: string; count: number }>>()
         .innerRadius(radius * 0.5)
         .outerRadius(radius * 0.8);
 
@@ -67,7 +78,7 @@ const CardType = ({ data }) => {
 
       // Add labels outside the chart with gaps and percentages
       const outerArc = d3
-        .arc()
+        .arc<d3.PieArcDatum<{ type: string; count: number }>>()
         .outerRadius(radius * 0.9)
         .innerRadius(radius * 0.9);
 
@@ -124,7 +135,7 @@ const CardType = ({ data }) => {
 
   return (
     <>
-      {isLoading && <div class="loader lg:mx-auto my-56"></div>}
+      {isLoading && <div className="loader lg:mx-auto my-56"></div>}
       <svg ref={svgRef}></svg>
     </>
   );

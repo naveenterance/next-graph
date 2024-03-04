@@ -1,10 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import Link from "next/link";
 
-const Stats = ({ data }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState(data.results);
+interface Pokemon {
+  name: string;
+}
+
+interface StatsProps {
+  data: {
+    results: Pokemon[];
+  };
+}
+
+const Stats: React.FC<StatsProps> = ({ data }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<Pokemon[]>(data.results);
 
   useEffect(() => {
     const filtered = data.results.filter((pokemon) =>
@@ -13,7 +23,7 @@ const Stats = ({ data }) => {
     setFilteredData(filtered);
   }, [searchTerm, data.results]);
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 

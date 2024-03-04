@@ -135,7 +135,7 @@ const PokemonTypesCount = () => {
     <div className="w-screen h-screen lg:p-8">
       {isLoading ? (
         <div className="w-screen h-screen">
-          <div class="loader lg:mx-auto my-56"></div>
+          <div className="loader lg:mx-auto my-56"></div>
         </div>
       ) : (
         <div className="w-screen h-screen">

@@ -1,11 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FC } from "react";
 import * as d3 from "d3";
 
-const PokemonDetails = ({ params }) => {
+interface PokemonDetailsProps {
+  params: {
+    pokemonName: string;
+  };
+}
+
+const PokemonDetails: FC<PokemonDetailsProps> = ({ params }) => {
   const { pokemonName } = params;
 
-  const [pokemonData, setPokemonData] = useState(null);
+  const [pokemonData, setPokemonData] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,10 +31,10 @@ const PokemonDetails = ({ params }) => {
   }, [pokemonName]);
 
   if (!pokemonData) {
-    return <div class="loader lg:mx-auto my-56"></div>;
+    return <div className="loader lg:mx-auto my-56"></div>;
   }
 
-  const data = pokemonData.stats.map((stat) => ({
+  const data = pokemonData.stats.map((stat: any) => ({
     Stat: stat.stat.name,
     Value: stat.base_stat,
   }));
@@ -40,15 +46,15 @@ const PokemonDetails = ({ params }) => {
   const outerRadius = 200;
 
   const x = d3
-    .scaleBand()
+    .scaleBand<string>()
     .range([0, 2 * Math.PI])
     .align(0)
     .domain(data.map((d) => d.Stat));
   const y = d3
-    .scaleRadial()
+    .scaleRadial<number, number>()
     .range([innerRadius, outerRadius])
     .domain([0, d3.max(data, (d) => d.Value)]);
-  const colorScale = d3.scaleOrdinal().range(d3.schemeCategory10);
+  const colorScale = d3.scaleOrdinal<string>().range(d3.schemeCategory10);
 
   const imageWidth = 150;
   const imageHeight = 150;
@@ -76,7 +82,7 @@ const PokemonDetails = ({ params }) => {
                 <path
                   fill={colorScale(i)}
                   d={d3
-                    .arc()
+                    .arc<any, any>()
                     .innerRadius(innerRadius)
                     .outerRadius(y(d.Value))
                     .startAngle(x(d.Stat))
@@ -123,7 +129,7 @@ const PokemonDetails = ({ params }) => {
         <div className=" border-4 border-green-400 rounded-md">
           <div className="text-xl font-bold p-2">Stats</div>
           <ul className="font-semibold  ">
-            {pokemonData.stats.map((stat, index) => (
+            {pokemonData.stats.map((stat: any, index: number) => (
               <li key={index} className="flex justify-between   p-4">
                 <div className="mr-4 uppercase"> {stat.stat.name}</div>{" "}
                 <div> {stat.base_stat}</div>
@@ -135,7 +141,7 @@ const PokemonDetails = ({ params }) => {
           <div className="border-4 border-blue-400 my-4 rounded-md">
             <div className="text-xl font-bold  p-2">Abilities:</div>
             <ul className="font-semibold  ">
-              {pokemonData.abilities.map((ability, index) => (
+              {pokemonData.abilities.map((ability: any, index: number) => (
                 <li key={index} className="flex justify-between p-4">
                   {ability.ability.name}
                 </li>
@@ -145,7 +151,7 @@ const PokemonDetails = ({ params }) => {
           <div className="border-4 border-red-400 rounded-md">
             <div className="text-xl font-bold p-2">Types:</div>
             <ul>
-              {pokemonData.types.map((type, index) => (
+              {pokemonData.types.map((type: any, index: number) => (
                 <li
                   key={index}
                   className="flex justify-between  p-4 font-semibold"
