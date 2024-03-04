@@ -1,34 +1,57 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Link from "next/link"; // Import Link for navigation
-import Router from "next/router"; // Import Router for programmatic navigation
+import Link from "next/link";
 
 const Stats = ({ data }) => {
-  const [info, setInfo] = useState();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState(data.results);
+
+  useEffect(() => {
+    const filtered = data.results.filter((pokemon) =>
+      pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [searchTerm, data.results]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
   return (
-    <div>
-      <h1>Pokemon Names</h1>
-      <ul>
-        {data.results.map((pokemon, index) => (
+    <div className="w-screen">
+      <div className="mx-12 my-6 w-1/2 flex ">
+        <input
+          className="border-4 focus:border-green-400 hover:border-green-400 outline-none p-2 transition ease-in-out delay-150 hover:-translate-y-1"
+          placeholder="Search Pokemon"
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        <Link
+          href={`/pokemon/types`}
+          className="border-4 hover:border-green-400 h-full  p-4 mx-12 hover:text-green-300 transition ease-in-out delay-150 hover:-translate-y-1"
+        >
+          Pokemon Types Graph
+        </Link>
+      </div>
+      <ul className="grid grid-cols-4 mx-12 ">
+        {filteredData.map((pokemon, index) => (
           <li key={index}>
             <Link
               href={{
                 pathname: `/pokemon/${encodeURIComponent(pokemon.name)}`,
               }}
-              onClick={() => setInfo(pokemon.url)} // Set info for potential server-side usage
+              className="flex justify-around  border-4 hover:border-green-400 h-full  p-4 transition ease-in-out delay-150 hover:-translate-y-1"
             >
-              {pokemon.name}
+              <p className="my-auto mx-1"> {pokemon.name}</p>
+              <img
+                src={`https://img.pokemondb.net/artwork/large/${pokemon.name}.jpg`}
+                alt="[no sprite available]"
+                className="w-12 h-12"
+              />
             </Link>
           </li>
         ))}
       </ul>
-
-      {info && (
-        <button onClick={() => Router.push(`/${encodeURIComponent(info)}`)}>
-          Go to Selected Pokemon
-        </button>
-      )}
     </div>
   );
 };

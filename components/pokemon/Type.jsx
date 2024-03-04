@@ -2,10 +2,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-const DonutChart = ({ data }) => {
+const DonutChart = ({ data, isLoading }) => {
   const svgRef = useRef();
 
   useEffect(() => {
+    if (isLoading) return; // Do not render the chart if still loading
+
     const width = 1000,
       height = 450,
       margin = 40;
@@ -85,13 +87,14 @@ const DonutChart = ({ data }) => {
         const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
         return midangle < Math.PI ? "start" : "end";
       });
-  }, [data]);
+  }, [data, isLoading]);
 
   return <svg ref={svgRef}></svg>;
 };
 
 const PokemonTypesCount = () => {
   const [pokemonTypesCount, setPokemonTypesCount] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,8 +116,10 @@ const PokemonTypesCount = () => {
           });
         }
         setPokemonTypesCount(typesCount);
+        setIsLoading(false); // Set loading to false once data is fetched
       } catch (error) {
         console.error("Error fetching data:", error);
+        setIsLoading(false); // Set loading to false in case of error
       }
     };
 
@@ -127,9 +132,18 @@ const PokemonTypesCount = () => {
   }));
 
   return (
-    <div className="w-screen h-screen p-8">
-      <h2>Pokémon Types Count:</h2>
-      <DonutChart data={data} />
+    <div className="w-screen h-screen lg:p-8">
+      {isLoading ? (
+        <div className="w-screen h-screen">
+          <div class="loader lg:mx-auto my-56"></div>
+        </div>
+      ) : (
+        <div className="w-screen h-screen">
+          <div className="mx-48">
+            <DonutChart data={data} isLoading={isLoading} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

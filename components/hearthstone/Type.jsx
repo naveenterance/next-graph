@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3"; // Import D3 library
 
-const ArtistsDonutChart = ({ data }) => {
+const CardType = ({ data }) => {
   const svgRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true); // State variable for loading
 
   useEffect(() => {
     const fetchDataAndDrawChart = () => {
@@ -113,12 +114,20 @@ const ArtistsDonutChart = ({ data }) => {
           posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1); // multiply by 1 or -1 to put it on the right or on the left
           return [posA, posB, posC];
         });
+
+      // Set loading state to false after drawing chart
+      setIsLoading(false);
     };
 
     fetchDataAndDrawChart();
   }, [data]);
 
-  return <svg ref={svgRef}></svg>;
+  return (
+    <>
+      {isLoading && <div class="loader lg:mx-auto my-56"></div>}
+      <svg ref={svgRef}></svg>
+    </>
+  );
 };
 
-export default ArtistsDonutChart;
+export default CardType;

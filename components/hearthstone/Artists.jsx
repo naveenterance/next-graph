@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3"; // Import D3 library
 
 const ArtistsHistogram = ({ data }) => {
-  const svgRef = useRef(); // Reference to SVG element
+  const svgRef = useRef();
+  const [isLoading, setIsLoading] = useState(true); // Reference to SVG element
 
   useEffect(() => {
     const fetchArtistData = () => {
@@ -94,6 +95,7 @@ const ArtistsHistogram = ({ data }) => {
             // Hide tooltip on mouseout
             d3.select("#tooltip").style("display", "none");
           });
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -104,6 +106,7 @@ const ArtistsHistogram = ({ data }) => {
 
   return (
     <div className="h-screen p-2 relative">
+      {isLoading && <div class="loader lg:mx-auto my-56"></div>}
       <svg ref={svgRef}></svg>
       <div
         id="tooltip"

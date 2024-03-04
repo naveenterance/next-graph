@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import * as d3 from "d3";
 
 const PokemonDetails = ({ params }) => {
   const { pokemonName } = params;
@@ -24,67 +25,138 @@ const PokemonDetails = ({ params }) => {
   }, [pokemonName]);
 
   if (!pokemonData) {
-    return <div>Loading...</div>; // Display a loading message while data is being fetched
+    return <div class="loader lg:mx-auto my-56"></div>;
   }
 
+  const data = pokemonData.stats.map((stat) => ({
+    Stat: stat.stat.name,
+    Value: stat.base_stat,
+  }));
+
+  const margin = { top: 100, right: 0, bottom: 0, left: 0 };
+  const width = 800 - margin.left - margin.right;
+  const height = 700 - margin.top - margin.bottom;
+  const innerRadius = 150;
+  const outerRadius = 200;
+
+  const x = d3
+    .scaleBand()
+    .range([0, 2 * Math.PI])
+    .align(0)
+    .domain(data.map((d) => d.Stat));
+  const y = d3
+    .scaleRadial()
+    .range([innerRadius, outerRadius])
+    .domain([0, d3.max(data, (d) => d.Value)]);
+  const colorScale = d3.scaleOrdinal().range(d3.schemeCategory10);
+
+  const imageWidth = 150;
+  const imageHeight = 150;
+  const imageUrl = `https://img.pokemondb.net/artwork/large/${pokemonName}.jpg`;
+
   return (
-    <div className="flex">
-      <h1>{pokemonName}</h1>
+    <div className=" w-screen flex h-full">
+      <div>
+        <p className="text-5xl font-bold mx-72 my-4 uppercase text-gray-300">
+          {pokemonName}
+        </p>
 
-      <img
-        src={`https://img.pokemondb.net/artwork/large/${pokemonName}.jpg`}
-        className="w-1/4 my-24"
-      />
+        <svg width={width} height={height}>
+          <g transform={`translate(${width / 2},${height / 2})`}>
+            <image
+              href={imageUrl}
+              x={-imageWidth / 2}
+              y={-imageHeight / 2}
+              width={imageWidth}
+              height={imageHeight}
+            />
 
-      <h2>Stats:</h2>
-      {/* <ul>
-        {pokemonData.stats.map((stat, index) => (
-          <li key={index}>
-            {stat.stat.name}: {stat.base_stat}
-          </li>
-        ))}
-      </ul> */}
-      // Data for the circular bar plot
-const data = pokemonData.stats.map(stat => ({
-  Country: stat.stat.name,
-  Value: stat.base_stat
-}));
+            {data.map((d, i) => (
+              <g key={i}>
+                <path
+                  fill={colorScale(i)}
+                  d={d3
+                    .arc()
+                    .innerRadius(innerRadius)
+                    .outerRadius(y(d.Value))
+                    .startAngle(x(d.Stat))
+                    .endAngle(x(d.Stat) + x.bandwidth())
+                    .padAngle(0.01)
+                    .padRadius(innerRadius)()}
+                />
+              </g>
+            ))}
 
-// Scales
-const x = d3.scaleBand()
-  .range([0, 2 * Math.PI])
-  .align(0)
-  .domain(data.map(d => d.Country));
-const y = d3.scaleRadial()
-  .range([innerRadius, outerRadius])
-  .domain([0, d3.max(data, d => d.Value)]);
+            {data.map((d, i) => (
+              <g
+                key={i}
+                textAnchor={
+                  (x(d.Stat) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) <
+                  Math.PI
+                    ? "end"
+                    : "start"
+                }
+                transform={`rotate(${
+                  ((x(d.Stat) + x.bandwidth() / 2) * 180) / Math.PI - 90
+                })translate(${outerRadius + 10},0)`}
+              >
+                <text
+                  transform={
+                    (x(d.Stat) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) <
+                    Math.PI
+                      ? "rotate(180)"
+                      : "rotate(0)"
+                  }
+                  fontSize="12px"
+                  alignmentBaseline="middle"
+                  className="font-bold"
+                >
+                  {d.Stat} [ {d.Value} ]
+                </text>
+              </g>
+            ))}
+          </g>
+        </svg>
+      </div>
 
-// Add the bars
-svg.selectAll("path")
-  .data(data)
-  .enter()
-  .append("path")
-  .attr("fill", "#69b3a2")
-  .attr("d", d3.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(d => y(d.Value))
-    .startAngle(d => x(d.Country))
-    .endAngle(d => x(d.Country) + x.bandwidth())
-    .padAngle(0.01)
-    .padRadius(innerRadius));
-
-// Add the labels
-svg.selectAll("text")
-  .data(data)
-  .enter()
-  .append("text")
-  .attr("text-anchor", d => (x(d.Country) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start")
-  .attr("transform", d => `rotate(${(x(d.Country) + x.bandwidth() / 2) * 180 / Math.PI - 90})translate(${y(d.Value) + 10},0)`)
-  .text(d => d.Country)
-  .attr("transform", d => (x(d.Country) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)")
-  .style("font-size", "11px")
-  .attr("alignment-baseline", "middle");
-
+      <div className="my-4 flex h-fit">
+        <div className=" border-4 border-green-400 rounded-md">
+          <div className="text-xl font-bold p-2">Stats</div>
+          <ul className="font-semibold  ">
+            {pokemonData.stats.map((stat, index) => (
+              <li key={index} className="flex justify-between   p-4">
+                <div className="mr-4 uppercase"> {stat.stat.name}</div>{" "}
+                <div> {stat.base_stat}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mx-4">
+          <div className="border-4 border-blue-400 my-4 rounded-md">
+            <div className="text-xl font-bold  p-2">Abilities:</div>
+            <ul className="font-semibold  ">
+              {pokemonData.abilities.map((ability, index) => (
+                <li key={index} className="flex justify-between p-4">
+                  {ability.ability.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="border-4 border-red-400 rounded-md">
+            <div className="text-xl font-bold p-2">Types:</div>
+            <ul>
+              {pokemonData.types.map((type, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between  p-4 font-semibold"
+                >
+                  {type.type.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
